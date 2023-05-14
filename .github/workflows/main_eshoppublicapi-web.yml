@@ -1,46 +1,51 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
-name: Public Api - Build and deploy container app to Azure Web App
-on: [workflow_dispatch]
+name: Build and deploy container app to Azure Web App - eshoppublicapi-web
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
 
 jobs:
   build:
-    runs-on: "ubuntu-latest"
+    runs-on: 'ubuntu-latest'
 
     steps:
-      - uses: actions/checkout@v2
+    - uses: actions/checkout@v2
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
 
-      - name: Log in to registry
-        uses: docker/login-action@v2
-        with:
-          registry: https://cloudxcontainerregistry.azurecr.io/
-          username: ${{ secrets.AzureAppService_ContainerUsername_fbe075a67ea24b2a964ae9af86baedbe }}
-          password: ${{ secrets.AzureAppService_ContainerPassword_68e59845adbd4e178b9ffa60a2509c14 }}
+    - name: Log in to registry
+      uses: docker/login-action@v2
+      with:
+        registry: https://cloudxcontainerregistry.azurecr.io/
+        username: ${{ secrets.AzureAppService_ContainerUsername_cf400f15b9524f8790c34d75851beaf9 }}
+        password: ${{ secrets.AzureAppService_ContainerPassword_92073c04d73a426f98eb5e8e8fe6cfb5 }}
 
-      - name: Build and push container image to registry
-        uses: docker/build-push-action@v3
-        with:
-          push: true
-          tags: cloudxcontainerregistry.azurecr.io/${{ secrets.AzureAppService_ContainerUsername_fbe075a67ea24b2a964ae9af86baedbe }}/eshoppublicapi:${{ github.sha }}
-          file: ./src/PublicApi/Dockerfile
+    - name: Build and push container image to registry
+      uses: docker/build-push-action@v3
+      with:
+        push: true
+        tags: cloudxcontainerregistry.azurecr.io/${{ secrets.AzureAppService_ContainerUsername_cf400f15b9524f8790c34d75851beaf9 }}/cloudxcontainerregistry/eshoppublicapi:${{ github.sha }}
+        file: ./Dockerfile
 
   deploy:
     runs-on: ubuntu-latest
     needs: build
     environment:
-      name: "production"
+      name: 'production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
     steps:
-      - name: Deploy to Azure Web App
-        id: deploy-to-webapp
-        uses: azure/webapps-deploy@v2
-        with:
-          app-name: "eshoppublicapi-web"
-          slot-name: "production"
-          publish-profile: ${{ secrets.AzureAppService_PublishProfile_e54f785ce4f0454b9cb5c86f85d611d9 }}
-          images: "cloudxcontainerregistry.azurecr.io/${{ secrets.AzureAppService_ContainerUsername_fbe075a67ea24b2a964ae9af86baedbe }}/eshoppublicapi:${{ github.sha }}"
+    - name: Deploy to Azure Web App
+      id: deploy-to-webapp
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: 'eshoppublicapi-web'
+        slot-name: 'production'
+        publish-profile: ${{ secrets.AzureAppService_PublishProfile_204ba0f2c1d0484294a6d18190a4781b }}
+        images: 'cloudxcontainerregistry.azurecr.io/${{ secrets.AzureAppService_ContainerUsername_cf400f15b9524f8790c34d75851beaf9 }}/cloudxcontainerregistry/eshoppublicapi:${{ github.sha }}'
